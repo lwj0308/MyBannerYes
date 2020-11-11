@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -26,28 +27,42 @@ public class MainActivity extends AppCompatActivity {
         mMyBanner = findViewById(R.id.my_banner);
         initData();
         initEvent();
+        initListener();
 
 
     }
 
-    private void initEvent() {
-        mMyBanner.setData(new MyBanner.InnerPageAdapter() {
-            @Override
-            public int getDataSize() {
-                return mDatas.size();
-            }
+    private void initListener() {
+        if (mPageAdapter != null) {
+            mMyBanner.setOnItemClickListener(new MyBanner.OnItemClickListener() {
+                @Override
+                public void itemClick(int position) {
+                    Toast.makeText(MainActivity.this,mDatas.get(position).getTitle(),Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
 
-            @Override
-            protected View getItemView(ViewGroup container, int itemPosition) {
-                ImageView imageView = new ImageView(container.getContext());
-                imageView.setScaleType(ImageView.ScaleType.FIT_XY);
-                //设置图片
-                imageView.setImageResource(mDatas.get(itemPosition).getPicResID());
-                ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-                imageView.setLayoutParams(layoutParams);
-                return imageView;
-            }
-        }, position -> mDatas.get(position).getTitle());
+    private MyBanner.InnerPageAdapter mPageAdapter = new MyBanner.InnerPageAdapter() {
+        @Override
+        public int getDataSize() {
+            return mDatas.size();
+        }
+
+        @Override
+        protected View getItemView(ViewGroup container, int itemPosition) {
+            ImageView imageView = new ImageView(container.getContext());
+            imageView.setScaleType(ImageView.ScaleType.FIT_XY);
+            //设置图片
+            imageView.setImageResource(mDatas.get(itemPosition).getPicResID());
+            ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            imageView.setLayoutParams(layoutParams);
+            return imageView;
+        }
+    };
+
+    private void initEvent() {
+        mMyBanner.setData(mPageAdapter, position -> mDatas.get(position).getTitle());
     }
 
     private void initData() {

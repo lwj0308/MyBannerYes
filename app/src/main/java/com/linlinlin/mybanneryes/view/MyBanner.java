@@ -2,7 +2,6 @@ package com.linlinlin.mybanneryes.view;
 
 import android.content.Context;
 import android.database.DataSetObserver;
-import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,13 +18,13 @@ import com.linlinlin.mybanneryes.R;
 import com.linlinlin.mybanneryes.SizeUtil;
 
 public class MyBanner extends LinearLayout {
-    private ViewPager vp;
+    private MyViewPager vp;
     private TextView tvTitle;
     private LinearLayout llPoints;
     private InnerPageAdapter mInnerPageAdapter = null;
     private TitleBindListener mTitleBindListener = null;
+    private OnItemClickListener mOnItemClickListener = null;
 
-    public Handler mHandler = new Handler();
 
     public MyBanner(Context context) {
         this(context, null);
@@ -44,6 +43,8 @@ public class MyBanner extends LinearLayout {
 
     private void initView() {
         vp = this.findViewById(R.id.vp);
+        vp.setOffscreenPageLimit(3);
+        vp.setPageMargin(SizeUtil.dip2Px(getContext(), 10));
         tvTitle = this.findViewById(R.id.tv_title);
         llPoints = this.findViewById(R.id.ll_points);
     }
@@ -60,19 +61,18 @@ public class MyBanner extends LinearLayout {
                 updateIndicator();
             }
         });
-        mHandler.postDelayed(mRunnable, 3000);
     }
 
-    public Runnable mRunnable = new Runnable() {
-        @Override
-        public void run() {
-            int position = vp.getCurrentItem() + 1;
-            vp.setCurrentItem(position);
-            postDelayed(this, 4000);
-        }
-    };
-
     private void initEvent() {
+        vp.setOnPagerItemClickListener(new MyViewPager.OnPagerItemClickListener() {
+            @Override
+            public void onItemClick(int position) {
+                if (mOnItemClickListener != null && mInnerPageAdapter != null) {
+                    int realPosition = position % mInnerPageAdapter.getDataSize();
+                    mOnItemClickListener.itemClick(realPosition);
+                }
+            }
+        });
         vp.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -157,5 +157,11 @@ public class MyBanner extends LinearLayout {
         protected abstract View getItemView(ViewGroup container, int itemPosition);
     }
 
+    public interface OnItemClickListener {
+        void itemClick(int position);
+    }
 
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+        mOnItemClickListener = onItemClickListener;
+    }
 }
